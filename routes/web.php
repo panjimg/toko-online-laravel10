@@ -8,6 +8,10 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\MidtransController;
+
 
 Route::get('/', function () {
     // return view('welcome');
@@ -67,6 +71,7 @@ Route::get('/customer/akun/{id}', [CustomerController::class, 'akun'])->name('cu
 Route::put('/customer/update/{id}', [CustomerController::class, 'updateAkun'])->name('customer.update')->middleware('is.customer');
 
 // Group route untuk customer
+// Group route untuk customer
 Route::middleware('is.customer')->group(function () {
     // Route untuk menampilkan halaman akun customer
     Route::get('/customer/akun/{id}', [CustomerController::class, 'akun'])
@@ -76,11 +81,62 @@ Route::middleware('is.customer')->group(function () {
     // Route untuk mengupdate data akun customer
     Route::put('/customer/updateakun/{id}', [CustomerController::class, 'updateAkun'])
         ->name('customer.updateakun');
-        // Route untuk menambahkan produk ke keranjang
+
+
+    // Route untuk menambahkan produk ke keranjang
     Route::post('add-to-cart/{id}', [OrderController::class, 'addToCart'])->name('order.addToCart');
     Route::get('cart', [OrderController::class, 'viewCart'])->name('order.cart');
+    Route::post('cart/update/{id}', [OrderController::class, 'updateCart'])->name('order.updateCart');
+    Route::post('remove/{id}', [OrderController::class, 'removeFromCart'])->name('order.remove');
+    Route::post('select-shipping', [OrderController::class, 'selectShipping'])->name('order.select-shipping');
+    Route::post('update-ongkir', [OrderController::class, 'updateOngkir'])->name('order.update-ongkir');
+    Route::get('select-payment', [OrderController::class, 'selectPayment'])->name('order.selectpayment');
 });
 
 
+Route::get('/list-ongkir', function () {
+    $response = \Illuminate\Support\Facades\Http::timeout(20)
+        ->withHeaders([
+            'key' => config('services.rajaongkir.key'),
+        ])
+        ->get(
+            'https://rajaongkir.komerce.id/api/v1/destination/province'
+        );
 
+    if ($response->failed()) {
+        return response()->json([
+            'status' => 'error',
+            'http_status' => $response->status(),
+            'message' => $response->body(),
+        ], $response->status());
+    }
+
+    return response()->json($response->json());
+});
+
+Route::get('/provinces', [
+    RajaOngkirController::class,
+    'getProvinces'
+]);
+
+Route::get('/cities', [
+    RajaOngkirController::class,
+    'getCities'
+]);
+
+Route::post('/ongkir', [
+    RajaOngkirController::class,
+    'getCost'
+]);
+
+Route::get('/cek-ongkir', function () {
+    return view('ongkir');
+});
+
+ Route::get('select-payment', [OrderController::class, 'selectPayment'])->name('order.selectpayment');
+    Route::post('/midtrans-callback', [OrderController::class, 'callback']);
+    Route::get('/order/complete', [OrderController::class, 'complete'])->name('order.complete');
+    // Route history
+    Route::get('history', [OrderController::class, 'orderHistory'])->name('order.history');
+    Route::get('order/invoice/{id}', [OrderController::class, 'invoiceFrontend'])->name('order.invoice');
 

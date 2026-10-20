@@ -60,7 +60,7 @@
                     </td>
                     <td class="price text-center"><strong>Rp. {{ number_format($item->harga, 0, ',', '.') }}</strong></td>
                     <td class="qty text-center">
-                        <form action="#" method="post">
+                        <form action="{{ route('order.updateCart', $item->id) }}" method="post">
                             @csrf
                             <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" style="width: 60px;">
                             <button type="submit" class="btn btn-sm btn-warning">Update</button>
@@ -68,7 +68,7 @@
                     </td>
                     <td class="total text-center"><strong class="primary-color">Rp. {{ number_format($item->harga * $item->quantity, 0, ',', '.') }}</strong></td>
                     <td class="text-right">
-                        <form action="#" method="post">
+                        <form action="{{ route('order.remove', $item->produk->id) }}" method="post">
                             @csrf
                             <button class="main-btn icon-btn"><i class="fa fa-close"></i></button>
                         </form>
@@ -79,7 +79,7 @@
         </table>
 
 
-        <form action="#" method="post">
+        <form action="{{ route('order.select-shipping') }}" method="post">
             @csrf
             <input type="hidden" name="total_price" value="{{ $totalHarga }}">
             <input type="hidden" name="total_weight" value="{{ $totalBerat }}">
@@ -96,4 +96,3 @@
 
 <!-- end template-->
 @endsection
-
